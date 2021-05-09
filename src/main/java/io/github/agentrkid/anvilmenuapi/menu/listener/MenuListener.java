@@ -50,6 +50,7 @@ public class MenuListener extends PacketAdapter implements Listener {
                     // They closed without giving a result,
                     // lets notify the consumer they did!
                     menu.getAnvilConsumer().accept(CloseResult.PLAYER, "");
+                    AnvilMenu.openedMenus.remove(player.getUniqueId());
                 }
             }
         }

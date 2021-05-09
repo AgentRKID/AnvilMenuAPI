@@ -69,6 +69,7 @@ public class AnvilMenu {
 
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, closeAnvilPacket);
+            AnvilMenu.openedMenus.remove(player.getUniqueId());
         } catch (Exception ignored) {}
     }
 
