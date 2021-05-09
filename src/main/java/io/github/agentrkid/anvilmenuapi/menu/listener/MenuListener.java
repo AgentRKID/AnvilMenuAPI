@@ -46,6 +46,9 @@ public class MenuListener extends PacketAdapter implements Listener {
                         // the inventory after so we need to do it.
                         menu.close(player);
                     }
+
+                    // No reason for the server to handle the packet.
+                    event.setCancelled(true);
                 } else {
                     // They closed without giving a result,
                     // lets notify the consumer they did!
