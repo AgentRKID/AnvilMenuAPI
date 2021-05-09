@@ -3,6 +3,7 @@ package io.github.agentrkid.anvilmenuapi;
 import com.comphenix.protocol.ProtocolLibrary;
 import io.github.agentrkid.anvilmenuapi.menu.listener.MenuListener;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class AnvilMenuAPI extends JavaPlugin {
@@ -18,7 +19,10 @@ public class AnvilMenuAPI extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        ProtocolLibrary.getProtocolManager().addPacketListener(new MenuListener());
+        MenuListener menuListener = new MenuListener();
+
+        ProtocolLibrary.getProtocolManager().addPacketListener(menuListener);
+        Bukkit.getPluginManager().registerEvents(menuListener, this);
     }
 
     @Override
