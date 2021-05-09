@@ -16,7 +16,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class AnvilMenu {
     private static final String ANVIL_INVENTORY_NAME = "minecraft:anvil";

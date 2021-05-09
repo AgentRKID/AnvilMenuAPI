@@ -1,13 +1,10 @@
 package io.github.agentrkid.anvilmenuapi;
 
 import com.comphenix.protocol.ProtocolLibrary;
-import io.github.agentrkid.anvilmenuapi.menu.AnvilMenu;
 import io.github.agentrkid.anvilmenuapi.menu.listener.MenuListener;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class AnvilMenuAPI extends JavaPlugin implements Listener {
