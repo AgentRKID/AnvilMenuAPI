@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class MenuListener extends PacketAdapter implements Listener {
     public MenuListener() {
-        super(AnvilMenuAPI.getInstance(), PacketType.Play.Client.WINDOW_CLICK);
+        super(AnvilMenuAPI.getInstance(), PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW);
     }
 
     @Override
@@ -22,13 +22,13 @@ public class MenuListener extends PacketAdapter implements Listener {
         PacketType packetType = event.getPacketType();
         Player player = event.getPlayer();
 
-        if (packetType == PacketType.Play.Client.WINDOW_CLICK) {
-            int windowId = packet.getIntegers().read(0);
+        int windowId = packet.getIntegers().read(0);
 
-            if (windowId == AnvilMenuAPI.ANVIL_MENU_ID) {
-                AnvilMenu menu = AnvilMenu.openedMenus.get(player.getUniqueId());
+        if (windowId == AnvilMenuAPI.ANVIL_MENU_ID) {
+            AnvilMenu menu = AnvilMenu.openedMenus.get(player.getUniqueId());
 
-                if (menu != null) {
+            if (menu != null) {
+                if (packetType == PacketType.Play.Client.WINDOW_CLICK) {
                     int slotId = packet.getIntegers().read(1);
 
                     if (slotId != 2) {
@@ -44,6 +44,12 @@ public class MenuListener extends PacketAdapter implements Listener {
                         // Minecraft for some reason won't close
                         // the inventory after so we need to do it.
                         menu.close(player);
+                    }
+                } else {
+                    // They closed without giving a result,
+                    // lets notify the consumer they did!
+                    if (menu.getCloseConsumer() != null) {
+                        menu.getCloseConsumer().accept(player);
                     }
                 }
             }

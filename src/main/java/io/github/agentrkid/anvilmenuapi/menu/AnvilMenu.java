@@ -76,10 +76,6 @@ public class AnvilMenu {
 
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, closeAnvilPacket);
-
-            if (closeConsumer != null) {
-                closeConsumer.accept(player);
-            }
         } catch (Exception ignored) {}
     }
 

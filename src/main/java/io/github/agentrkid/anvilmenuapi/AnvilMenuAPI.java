@@ -31,9 +31,4 @@ public class AnvilMenuAPI extends JavaPlugin implements Listener {
     public void onDisable() {
 
     }
-
-    @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
-        new AnvilMenu(text -> event.getPlayer().sendMessage(text)).open(event.getPlayer(), "&cCHAT");
-    }
 }
