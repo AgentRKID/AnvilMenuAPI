@@ -1,0 +1,5 @@
+name: AnvilMenuAPI
+version: ${git.commit.id.abbrev}
+author: AgentRKID
+main: io.github.agentrkid.anvilmenuapi.AnvilMenuAPI
+depend: [ProtocolLib]
