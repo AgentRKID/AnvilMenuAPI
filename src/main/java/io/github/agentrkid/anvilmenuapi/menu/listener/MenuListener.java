@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import io.github.agentrkid.anvilmenuapi.AnvilMenuAPI;
 import io.github.agentrkid.anvilmenuapi.menu.AnvilMenu;
+import io.github.agentrkid.anvilmenuapi.menu.CloseResult;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,7 +40,7 @@ public class MenuListener extends PacketAdapter implements Listener {
                         } catch (Exception ignored) {}
                     } else {
                         // Handle the finished product by accepting the finish function.
-                        menu.getFinishConsumer().accept(packet.getItemModifier().read(0).getItemMeta().getDisplayName());
+                        menu.getAnvilConsumer().accept(CloseResult.FINISH, packet.getItemModifier().read(0).getItemMeta().getDisplayName());
 
                         // Minecraft for some reason won't close
                         // the inventory after so we need to do it.
@@ -48,9 +49,7 @@ public class MenuListener extends PacketAdapter implements Listener {
                 } else {
                     // They closed without giving a result,
                     // lets notify the consumer they did!
-                    if (menu.getCloseConsumer() != null) {
-                        menu.getCloseConsumer().accept(player);
-                    }
+                    menu.getAnvilConsumer().accept(CloseResult.PLAYER, "");
                 }
             }
         }

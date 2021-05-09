@@ -26,16 +26,10 @@ public class AnvilMenu {
 
     private final ItemStack defaultStack = new ItemStack(Material.PAPER);
 
-    @Getter private final Consumer<String> finishConsumer;
-    @Getter private Consumer<Player> closeConsumer;
+    @Getter private final AnvilConsumer anvilConsumer;
 
-    public AnvilMenu(Consumer<String> finishConsumer) {
-        this.finishConsumer = finishConsumer;
-    }
-
-    public AnvilMenu(Consumer<String> finishConsumer, Consumer<Player> closeConsumer) {
-        this.finishConsumer = finishConsumer;
-        this.closeConsumer = closeConsumer;
+    public AnvilMenu(AnvilConsumer anvilConsumer) {
+        this.anvilConsumer = anvilConsumer;
     }
 
     /**
