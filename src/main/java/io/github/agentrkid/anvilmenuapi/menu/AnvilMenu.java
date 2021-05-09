@@ -21,9 +21,14 @@ public class AnvilMenu {
     private static final String ANVIL_INVENTORY_NAME = "minecraft:anvil";
     private static final WrappedChatComponent EMPTY_CHAT_COMPONENT = WrappedChatComponent.fromText("EMPTY");
 
+    private static final PacketContainer OPEN_MENU_PACKET;
+    private static final PacketContainer CLOSE_MENU_PACKET;
+
     public static Map<UUID, AnvilMenu> openedMenus = new HashMap<>();
 
     private final ItemStack defaultStack = new ItemStack(Material.PAPER);
+
+    private PacketContainer setSlotPacket;
 
     @Getter private final AnvilConsumer anvilConsumer;
 
@@ -38,19 +43,12 @@ public class AnvilMenu {
      * @param defaultText the default text of the paper.
      */
     public void open(Player player, String defaultText) {
-        PacketContainer openAnvilPacket = new PacketContainer(PacketType.Play.Server.OPEN_WINDOW);
-
-        openAnvilPacket.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
-        openAnvilPacket.getStrings().write(0, ANVIL_INVENTORY_NAME);
-        openAnvilPacket.getChatComponents().write(0, EMPTY_CHAT_COMPONENT);
-        openAnvilPacket.getIntegers().write(1, 0);
-
         ItemMeta meta = defaultStack.getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', defaultText));
         defaultStack.setItemMeta(meta);
 
         try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(player, openAnvilPacket);
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player, OPEN_MENU_PACKET);
             sendPaperBack(player);
 
             openedMenus.put(player.getUniqueId(), this);
@@ -63,12 +61,8 @@ public class AnvilMenu {
      * @param player the player to close for.
      */
     public void close(Player player) {
-        PacketContainer closeAnvilPacket = new PacketContainer(PacketType.Play.Server.CLOSE_WINDOW);
-
-        closeAnvilPacket.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
-
         try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(player, closeAnvilPacket);
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player, CLOSE_MENU_PACKET);
             AnvilMenu.openedMenus.remove(player.getUniqueId());
         } catch (Exception ignored) {}
     }
@@ -80,12 +74,25 @@ public class AnvilMenu {
      * @throws InvocationTargetException Protocol Lib throws this.
      */
     public void sendPaperBack(Player player) throws InvocationTargetException {
-        PacketContainer addPaperPacket = new PacketContainer(PacketType.Play.Server.SET_SLOT);
+        if (setSlotPacket == null) {
+            setSlotPacket = new PacketContainer(PacketType.Play.Server.SET_SLOT);
 
-        addPaperPacket.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
-        addPaperPacket.getIntegers().write(1, 0);
-        addPaperPacket.getItemModifier().write(0, defaultStack);
+            setSlotPacket.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
+            setSlotPacket.getIntegers().write(1, 0);
+            setSlotPacket.getItemModifier().write(0, defaultStack);
+        }
 
-        ProtocolLibrary.getProtocolManager().sendServerPacket(player, addPaperPacket);
+        ProtocolLibrary.getProtocolManager().sendServerPacket(player, setSlotPacket);
+    }
+
+    static {
+        CLOSE_MENU_PACKET = new PacketContainer(PacketType.Play.Server.CLOSE_WINDOW);
+        CLOSE_MENU_PACKET.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
+
+        OPEN_MENU_PACKET = new PacketContainer(PacketType.Play.Server.OPEN_WINDOW);
+        OPEN_MENU_PACKET.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
+        OPEN_MENU_PACKET.getStrings().write(0, ANVIL_INVENTORY_NAME);
+        OPEN_MENU_PACKET.getChatComponents().write(0, EMPTY_CHAT_COMPONENT);
+        OPEN_MENU_PACKET.getIntegers().write(1, 0);
     }
 }
