@@ -41,6 +41,11 @@ public class MenuListener extends PacketAdapter implements Listener {
                     } else {
                         // Handle the finished product by accepting the finish function.
                         menu.getAnvilConsumer().accept(CloseResult.FINISH, packet.getItemModifier().read(0).getItemMeta().getDisplayName());
+                        
+                        // Lets remove before closing
+                        // Because (menu#close) can handle an 
+                        // unexpected exception for some reason.
+                        AnvilMenu.openedMenus.remove(player.getUniqueId());
 
                         // Minecraft for some reason won't close
                         // the inventory after so we need to do it.
