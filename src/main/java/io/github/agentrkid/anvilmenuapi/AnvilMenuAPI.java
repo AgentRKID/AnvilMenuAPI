@@ -2,12 +2,13 @@ package io.github.agentrkid.anvilmenuapi;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import io.github.agentrkid.anvilmenuapi.menu.listener.MenuListener;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class AnvilMenuAPI extends JavaPlugin {
-    @Getter private static AnvilMenuAPI instance;
+public class AnvilMenuAPI {
+
+    private static boolean enabled = false;
+    private static JavaPlugin enablingPlugin = null;
 
     // We use a specific ID which is 0 and it will always return 0,
     // we couldn't do anything else since minecraft sends *bytes*
@@ -15,18 +16,19 @@ public class AnvilMenuAPI extends JavaPlugin {
     // minecraft will never have a container id of  0.
     public static int ANVIL_MENU_ID = 0;
 
-    @Override
-    public void onEnable() {
-        instance = this;
 
-        MenuListener menuListener = new MenuListener();
+    public static void register(JavaPlugin plugin) throws IllegalStateException {
+        if (enabled) {
+            throw new IllegalStateException(enablingPlugin.getName() + " has already enabled AnvilMenuAPI!");
+        }
 
-        ProtocolLibrary.getProtocolManager().addPacketListener(menuListener);
-        Bukkit.getPluginManager().registerEvents(menuListener, this);
+        MenuListener listener = new MenuListener(plugin);
+
+        ProtocolLibrary.getProtocolManager().addPacketListener(listener);
+        Bukkit.getPluginManager().registerEvents(listener, plugin);
+
+        enablingPlugin = plugin;
+        enabled = true;
     }
 
-    @Override
-    public void onDisable() {
-
-    }
 }

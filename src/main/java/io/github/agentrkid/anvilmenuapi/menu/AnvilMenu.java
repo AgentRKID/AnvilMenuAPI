@@ -2,6 +2,7 @@ package io.github.agentrkid.anvilmenuapi.menu;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import io.github.agentrkid.anvilmenuapi.AnvilMenuAPI;
@@ -16,31 +17,34 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 public class AnvilMenu {
+
     private static final String ANVIL_INVENTORY_NAME = "minecraft:anvil";
     private static final WrappedChatComponent EMPTY_CHAT_COMPONENT = WrappedChatComponent.fromText("EMPTY");
 
     private static final PacketContainer OPEN_MENU_PACKET;
     private static final PacketContainer CLOSE_MENU_PACKET;
 
+    private static final PacketContainer CARRIED_ITEM_PACKET;
+
     public static Map<UUID, AnvilMenu> openedMenus = new HashMap<>();
 
     private final ItemStack defaultStack = new ItemStack(Material.PAPER);
+    @Getter private final Map<UUID, String> inputs = new HashMap<>();
 
-    private PacketContainer setSlotPacket;
+    private PacketContainer setAnvilSlotPacket;
 
-    @Getter private final AnvilConsumer anvilConsumer;
+    @Getter private final BiConsumer<CloseResult, String>  consumer;
 
-    public AnvilMenu(AnvilConsumer anvilConsumer) {
-        this.anvilConsumer = anvilConsumer;
+    public AnvilMenu(BiConsumer<CloseResult, String> consumer) {
+        this.consumer = consumer;
     }
 
     /**
-     * Opens a anvil GUI
-     *
-     * @param player the player to open for.
-     * @param defaultText the default text of the paper.
+     * Opens a anvil GUI for {@param player} with a paper
+     * that has the text from {@param defaultText}
      */
     public void open(Player player, String defaultText) {
         ItemMeta meta = defaultStack.getItemMeta();
@@ -49,40 +53,40 @@ public class AnvilMenu {
 
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, OPEN_MENU_PACKET);
-            sendPaperBack(player);
+            sendPaperAndClearCursor(player);
 
             openedMenus.put(player.getUniqueId(), this);
         } catch (Exception ignored) {}
     }
 
     /**
-     * Closes the inventory of the anvil.
-     *
-     * @param player the player to close for.
+     * Closes the inventory of the anvil for {@param player}.
      */
     public void close(Player player) {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, CLOSE_MENU_PACKET);
+            inputs.remove(player.getUniqueId());
             AnvilMenu.openedMenus.remove(player.getUniqueId());
         } catch (Exception ignored) {}
     }
 
     /**
-     * Sends our paper back to the anvil
-     *
-     * @param player the player to send the packet to.
+     * Sends our paper back to the anvil for {@param player}
      * @throws InvocationTargetException Protocol Lib throws this.
      */
-    public void sendPaperBack(Player player) throws InvocationTargetException {
-        if (setSlotPacket == null) {
-            setSlotPacket = new PacketContainer(PacketType.Play.Server.SET_SLOT);
+    public void sendPaperAndClearCursor(Player player) throws InvocationTargetException {
+        if (setAnvilSlotPacket == null) {
+            setAnvilSlotPacket = new PacketContainer(PacketType.Play.Server.SET_SLOT);
 
-            setSlotPacket.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
-            setSlotPacket.getIntegers().write(1, 0);
-            setSlotPacket.getItemModifier().write(0, defaultStack);
+            setAnvilSlotPacket.getIntegers().write(0, AnvilMenuAPI.ANVIL_MENU_ID);
+            setAnvilSlotPacket.getIntegers().write(1, 0);
+            setAnvilSlotPacket.getItemModifier().write(0, defaultStack);
         }
 
-        ProtocolLibrary.getProtocolManager().sendServerPacket(player, setSlotPacket);
+        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
+
+        protocolManager.sendServerPacket(player, setAnvilSlotPacket);
+        protocolManager.sendServerPacket(player, CARRIED_ITEM_PACKET);
     }
 
     static {
@@ -94,5 +98,11 @@ public class AnvilMenu {
         OPEN_MENU_PACKET.getStrings().write(0, ANVIL_INVENTORY_NAME);
         OPEN_MENU_PACKET.getChatComponents().write(0, EMPTY_CHAT_COMPONENT);
         OPEN_MENU_PACKET.getIntegers().write(1, 0);
+
+        CARRIED_ITEM_PACKET = new PacketContainer(PacketType.Play.Server.SET_SLOT);
+        CARRIED_ITEM_PACKET.getIntegers().write(0, -1);
+        CARRIED_ITEM_PACKET.getIntegers().write(1, -1);
+        CARRIED_ITEM_PACKET.getItemModifier().write(0, null);
     }
+
 }
